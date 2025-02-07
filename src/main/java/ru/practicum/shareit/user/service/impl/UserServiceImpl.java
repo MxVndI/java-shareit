@@ -4,9 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.dto.UserDto;
+import ru.practicum.shareit.user.model.mapper.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.validator.UserEmailValidationHandler;
+import ru.practicum.shareit.user.validator.UserNameValidationHandler;
+import ru.practicum.shareit.user.validator.UserValidationHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,35 +20,45 @@ public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
 
     @Override
-    public User createUser(UserDto userDto) {
+    public UserDto createUser(UserDto userDto) {
         User user = new User();
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        return userStorage.save(user);
+        UserValidationHandler validationChain = createValidationChain();
+        validationChain.handle(userDto, user, true);
+        return UserMapper.toUserDto(userStorage.save(user));
     }
 
     @Override
-    public List<User> findAllUsers() {
-        return userStorage.findAllUsers();
+    public List<UserDto> findAllUsers() {
+        List<UserDto> userDtos = new ArrayList<>();
+        for (User user : userStorage.findAllUsers()) {
+            userDtos.add(UserMapper.toUserDto(user));
+        }
+        return userDtos;
     }
 
     @Override
-    public User findUserById(Integer id) {
-        return userStorage.findUserById(id);
+    public UserDto findUserById(Integer id) {
+        return UserMapper.toUserDto(userStorage.findUserById(id));
     }
 
     @Override
-    public User updateUser(Integer id, UserDto userDto) {
-        User user = new User();
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
+    public UserDto updateUser(Integer id, UserDto userDto) {
+        User user = userStorage.findUserById(id);
+        UserValidationHandler validationChain = createValidationChain();
+        validationChain.handle(userDto, user, false);
         user.setId(id);
-        return userStorage.updateUser(user, id);
+        return UserMapper.toUserDto(userStorage.updateUser(user));
     }
 
     @Override
-    public User deleteUserById(Integer id) {
-        return userStorage.deleteUserById(id);
+    public void deleteUserById(Integer id) {
+        userStorage.deleteUserById(id);
     }
 
+    private UserValidationHandler createValidationChain() {
+        UserValidationHandler nameHandler = new UserNameValidationHandler();
+        UserValidationHandler emailHandler = new UserEmailValidationHandler(userStorage);
+        nameHandler.setNext(emailHandler);
+        return nameHandler;
+    }
 }

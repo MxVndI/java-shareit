@@ -2,74 +2,99 @@ package ru.practicum.shareit.item.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.item.ItemNotFoundException;
 import ru.practicum.shareit.exception.item.UncorrectOwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.dto.ItemDto;
+import ru.practicum.shareit.item.model.mapper.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.item.validator.ItemAvailabilityHandler;
+import ru.practicum.shareit.item.validator.ItemDescriptionHandler;
+import ru.practicum.shareit.item.validator.ItemNameHandler;
+import ru.practicum.shareit.item.validator.ItemValidationHandler;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.storage.UserStorage;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemStorage itemStorage;
-    private final UserService userService;
+    private final UserStorage userStorage;
 
     @Override
-    public Item createItem(ItemDto itemDto, Integer userId) {
+    public ItemDto createItem(ItemDto itemDto, Integer userId) {
         Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setOwner(userService.findUserById(userId));
-        item.setAvailable(itemDto.getAvailable());
-        return itemStorage.save(item);
+        ItemValidationHandler validationChain = createValidationChain();
+        validationChain.handle(itemDto, item, true);
+        item.setOwner(userStorage.findUserById(userId));
+        return ItemMapper.toItemDto(itemStorage.save(item));
     }
 
     @Override
-    public Item findItemById(Integer id) {
-        return itemStorage.findItemById(id);
+    public ItemDto findItemById(Integer id) {
+        return ItemMapper.toItemDto(itemStorage.findItemById(id));
     }
 
     @Override
-    public List<Item> findAllByUser(Integer userId) {
-        return itemStorage.findAllByUser(userId);
+    public List<ItemDto> findAllByUser(Integer userId) {
+        List<Item> items = itemStorage.findAllByUser(userId);
+        List<ItemDto> userItemsDto = new ArrayList<>();
+        for (Item item : items) {
+            userItemsDto.add(ItemMapper.toItemDto(item));
+        }
+        return userItemsDto;
     }
 
     @Override
-    public Item updateItem(Integer id, ItemDto itemDto, Integer userId) {
-        Item item = new Item();
-        item.setId(id);
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
+    public ItemDto updateItem(Integer id, ItemDto itemDto, Integer userId) {
+        Item item = itemStorage.findItemById(id);
+        if (item == null) {
+            throw new ItemNotFoundException("Предмет с ID " + item.getId() + " не найден.");
+        }
+        ItemValidationHandler validationChain = createValidationChain();
+        validationChain.handle(itemDto, item, false);
         User owner = itemStorage.findItemById(id).getOwner();
         item.setOwner(owner);
         if (item.getOwner().getId().equals(userId)) {
-            return itemStorage.updateItem(item);
+            itemStorage.updateItem(item);
+            return itemDto;
         } else {
             throw new UncorrectOwnerException("Указан неверный владелец предмета");
         }
     }
 
     @Override
-    public Item deleteItemById(Integer id, Integer userId) {
+    public void deleteItemById(Integer id, Integer userId) {
         if (itemStorage.findItemById(id).getOwner().getId().equals(userId)) {
-            return itemStorage.deleteItemById(id);
+            itemStorage.deleteItemById(id);
         } else {
             throw new UncorrectOwnerException("Указан неверный владелец предмета");
         }
     }
 
     @Override
-    public List<Item> findItemsByNameOrDescription(String text) {
+    public List<ItemDto> findItemsByNameOrDescription(String text) {
         if (text == null || text.isEmpty()) {
-            return new LinkedList<>();
+            return new ArrayList<>();
         }
-        return itemStorage.findAllByNameOrDescription(text);
+        List<Item> items = itemStorage.findAllByNameOrDescription(text);
+        List<ItemDto> userItemsDto = new ArrayList<>();
+        for (Item item : items) {
+            userItemsDto.add(ItemMapper.toItemDto(item));
+        }
+        return userItemsDto;
     }
 
+    private ItemValidationHandler createValidationChain() {
+        ItemValidationHandler nameHandler = new ItemNameHandler();
+        ItemValidationHandler descriptionHandler = new ItemDescriptionHandler();
+        ItemValidationHandler availabilityHandler = new ItemAvailabilityHandler();
+        nameHandler.setNext(descriptionHandler);
+        descriptionHandler.setNext(availabilityHandler);
+        return nameHandler;
+    }
 }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.storage.impl;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exception.item.FailedItemSaveException;
 import ru.practicum.shareit.exception.item.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.search.OrSpecification;
@@ -14,46 +13,29 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryItemStorage implements ItemStorage {
     private final LinkedList<Item> items = new LinkedList<>();
+    // я оставил линкед лист, потому что нам нужны id внутри класса item. Если переводить в хэшу, надо что-то в ключ
+    // выводить, а что? id? тогда какая-то фигня выходит и там и там один и тот же id.. не вижу смысла, утяжеление только
 
     @Override
     public Item save(Item item) {
         item.setId(getLastId());
-        if (!isItemNameEmpty(item) && !isItemDescriptionEmpty(item) && !isItemAvailableEmpty(item)) {
-            items.add(item);
-            return item;
-        } else {
-            throw new FailedItemSaveException("Не удалось добавить предмет");
-        }
+        items.add(item);
+        return item;
     }
 
     @Override
     public Item updateItem(Item item) {
-        Item existingItem = findItemById(item.getId());
-        if (existingItem == null) {
-            throw new ItemNotFoundException("Предмет с ID " + item.getId() + " не найден.");
-        }
-        if (!isItemNameEmpty(item)) {
-            existingItem.setName(item.getName());
-        }
-        if (!isItemDescriptionEmpty(item)) {
-            existingItem.setDescription(item.getDescription());
-        }
-        if (!isItemAvailableEmpty(item)) {
-            existingItem.setAvailable(item.getAvailable());
-        }
-        return existingItem;
+        return items.set(item.getId()-1, item);
     }
 
     @Override
-    public Item deleteItemById(Integer id) {
+    public void deleteItemById(Integer id) {
         Item existingItem = findItemById(id);
         items.remove(existingItem);
-        return existingItem;
     }
 
     @Override
@@ -68,8 +50,7 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public List<Item> findAllByUser(Integer userId) {
-        return items.stream().filter(i -> i.getOwner().getId().equals(userId))
-                .collect(Collectors.toList());
+        return items.stream().filter(i -> i.getOwner().getId().equals(userId)).toList();
     }
 
     @Override
@@ -77,6 +58,7 @@ public class InMemoryItemStorage implements ItemStorage {
         return items;
     }
 
+    @Override
     public List<Item> findAllByNameOrDescription(String text) {
         Specification<Item> nameSpec = new NameSpecification(text);
         Specification<Item> descriptionSpec = new DescriptionSpecification(text);
@@ -84,7 +66,7 @@ public class InMemoryItemStorage implements ItemStorage {
         return findAll().stream()
                 .filter(combinedSpec::isSatisfiedBy)
                 .filter(Item::getAvailable)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Integer getLastId() {
@@ -92,17 +74,4 @@ public class InMemoryItemStorage implements ItemStorage {
             return 1;
         return items.getLast().getId() + 1;
     }
-
-    private boolean isItemNameEmpty(Item item) {
-        return item.getName() == null || item.getName().isEmpty();
-    }
-
-    private boolean isItemDescriptionEmpty(Item item) {
-        return item.getDescription() == null || item.getDescription().isEmpty();
-    }
-
-    private boolean isItemAvailableEmpty(Item item) {
-        return item.getAvailable() == null;
-    }
-
 }

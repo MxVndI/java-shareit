@@ -9,7 +9,7 @@ public interface ItemStorage {
 
     Item updateItem(Item item);
 
-    Item deleteItemById(Integer id);
+    void deleteItemById(Integer id);
 
     Item findItemById(Integer id);
 
