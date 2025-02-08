@@ -5,39 +5,42 @@ import ru.practicum.shareit.exception.user.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+
 
 @Repository
 public class InMemoryUserStorage implements UserStorage {
-    private final LinkedList<User> users = new LinkedList<>();
+    private final HashMap<Integer, User> users = new HashMap<>();
 
     public User save(User user) {
         user.setId(getLastId());
-        this.users.add(user);
+        this.users.put(user.getId(), user);
         return user;
     }
 
     private Integer getLastId() {
         if (users.isEmpty())
             return 1;
-        return users.getLast().getId() + 1;
+        List<User> userList = new ArrayList<>(users.values());
+        User lastUser = userList.getLast();
+        return lastUser != null ? lastUser.getId() + 1 : 1;
     }
 
+
     public User updateUser(User user) {
-        this.users.set(user.getId() - 1, user);
+        this.users.replace(user.getId(), user);
         return user;
     }
 
     public void deleteUserById(Integer id) {
-        User user = findUserById(id);
-        users.remove(user);
+        users.remove(id);
     }
 
     public User findUserById(Integer id) {
-        Optional<User> user = users.stream().filter(u -> Objects.equals(u.getId(), id)).findFirst();
+        Optional<User> user = Optional.ofNullable(users.get(id));
         if (user.isPresent()) {
             return user.get();
         } else {
@@ -47,7 +50,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> findAllUsers() {
-        return users;
+        return users.values().stream().toList();
     }
 
 }

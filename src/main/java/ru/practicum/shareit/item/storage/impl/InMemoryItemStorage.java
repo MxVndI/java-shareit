@@ -9,38 +9,36 @@ import ru.practicum.shareit.item.search.impl.DescriptionSpecification;
 import ru.practicum.shareit.item.search.impl.NameSpecification;
 import ru.practicum.shareit.item.storage.ItemStorage;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+
 
 @Repository
 public class InMemoryItemStorage implements ItemStorage {
-    private final LinkedList<Item> items = new LinkedList<>();
-    // я оставил линкед лист, потому что нам нужны id внутри класса item. Если переводить в хэшу, надо что-то в ключ
-    // выводить, а что? id? тогда какая-то фигня выходит и там и там один и тот же id.. не вижу смысла, утяжеление только
+    private final HashMap<Integer, Item> items = new HashMap<>();
 
     @Override
     public Item save(Item item) {
         item.setId(getLastId());
-        items.add(item);
+        items.put(item.getId(), item);
         return item;
     }
 
     @Override
     public Item updateItem(Item item) {
-        return items.set(item.getId() - 1, item);
+        return items.replace(item.getId(), item);
     }
 
     @Override
     public void deleteItemById(Integer id) {
-        Item existingItem = findItemById(id);
-        items.remove(existingItem);
+        items.remove(id);
     }
 
     @Override
     public Item findItemById(Integer id) {
-        Optional<Item> item = items.stream().filter(i -> Objects.equals(i.getId(), id)).findFirst();
+        Optional<Item> item = Optional.ofNullable(items.get(id));
         if (item.isPresent()) {
             return item.get();
         } else {
@@ -50,12 +48,18 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public List<Item> findAllByUser(Integer userId) {
-        return items.stream().filter(i -> i.getOwner().getId().equals(userId)).toList();
+        List<Item> userItems = new ArrayList<>();
+        for (Item item: items.values()) {
+            if (item.getOwner().getId().equals(userId)) {
+                userItems.add(item);
+            }
+        }
+        return userItems;
     }
 
     @Override
     public List<Item> findAll() {
-        return items;
+        return items.values().stream().toList();
     }
 
     @Override
@@ -72,6 +76,9 @@ public class InMemoryItemStorage implements ItemStorage {
     private Integer getLastId() {
         if (items.isEmpty())
             return 1;
-        return items.getLast().getId() + 1;
+        List<Item> itemList = new ArrayList<>(items.values());
+        Item lastItem = itemList.getLast();
+        return lastItem != null ? lastItem.getId() + 1 : 1;
     }
+
 }

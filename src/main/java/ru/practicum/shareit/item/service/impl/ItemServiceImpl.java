@@ -59,6 +59,7 @@ public class ItemServiceImpl implements ItemService {
         validationChain.handle(itemDto, item, false);
         User owner = itemStorage.findItemById(id).getOwner();
         item.setOwner(owner);
+        item.setId(id);
         if (item.getOwner().getId().equals(userId)) {
             itemStorage.updateItem(item);
             return itemDto;
