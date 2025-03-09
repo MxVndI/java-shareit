@@ -6,12 +6,12 @@ import ru.practicum.shareit.exception.user.InvalidEmailException;
 import ru.practicum.shareit.exception.user.UserAlreadyExistException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.dto.UserDto;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.storage.repository.UserRepository;
 
 @RequiredArgsConstructor
 public class UserEmailValidationHandler implements UserValidationHandler {
     private UserValidationHandler next;
-    private final UserStorage userStorage;
+    private final UserRepository userStorage;
 
     @Override
     public void setNext(UserValidationHandler next) {
@@ -38,7 +38,7 @@ public class UserEmailValidationHandler implements UserValidationHandler {
     }
 
     private void checkUserEmailAvailable(User user) {
-        for (User u : userStorage.findAllUsers()) {
+        for (User u : userStorage.findAll()) {
             if (u.getEmail().equals(user.getEmail()) && !u.getId().equals(user.getId())) {
                 throw new UserAlreadyExistException("Email " + user.getEmail() + " уже зарегистрирован");
             }

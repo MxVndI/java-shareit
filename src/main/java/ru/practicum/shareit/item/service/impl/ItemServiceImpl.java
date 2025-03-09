@@ -9,12 +9,13 @@ import ru.practicum.shareit.item.model.dto.ItemDto;
 import ru.practicum.shareit.item.model.mapper.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.item.storage.repository.ItemRepository;
 import ru.practicum.shareit.item.validator.ItemAvailabilityHandler;
 import ru.practicum.shareit.item.validator.ItemDescriptionHandler;
 import ru.practicum.shareit.item.validator.ItemNameHandler;
 import ru.practicum.shareit.item.validator.ItemValidationHandler;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.storage.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,26 +23,26 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final ItemStorage itemStorage;
-    private final UserStorage userStorage;
+    private final ItemRepository itemStorage;
+    private final UserRepository userStorage;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Integer userId) {
         Item item = new Item();
         ItemValidationHandler validationChain = createValidationChain();
         validationChain.handle(itemDto, item, true);
-        item.setOwner(userStorage.findUserById(userId));
+        item.setOwner(userStorage.findById(userId).get());
         return ItemMapper.toItemDto(itemStorage.save(item));
     }
 
     @Override
     public ItemDto findItemById(Integer id) {
-        return ItemMapper.toItemDto(itemStorage.findItemById(id));
+        return ItemMapper.toItemDto(itemStorage.findById(id).get());
     }
 
     @Override
     public List<ItemDto> findAllByUser(Integer userId) {
-        List<Item> items = itemStorage.findAllByUser(userId);
+        List<Item> items = itemStorage.findAllByOwnerId(userId);
         List<ItemDto> userItemsDto = new ArrayList<>();
         for (Item item : items) {
             userItemsDto.add(ItemMapper.toItemDto(item));
@@ -51,17 +52,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(Integer id, ItemDto itemDto, Integer userId) {
-        Item item = itemStorage.findItemById(id);
+        Item item = itemStorage.findById(id).get();
         if (item == null) {
             throw new ItemNotFoundException("Предмет с ID " + item.getId() + " не найден.");
         }
         ItemValidationHandler validationChain = createValidationChain();
         validationChain.handle(itemDto, item, false);
-        User owner = itemStorage.findItemById(id).getOwner();
+        User owner = itemStorage.findById(id).get().getOwner();
         item.setOwner(owner);
         item.setId(id);
         if (item.getOwner().getId().equals(userId)) {
-            itemStorage.updateItem(item);
+            itemStorage.save(item);
             return itemDto;
         } else {
             throw new UncorrectOwnerException("Указан неверный владелец предмета");
@@ -70,8 +71,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteItemById(Integer id, Integer userId) {
-        if (itemStorage.findItemById(id).getOwner().getId().equals(userId)) {
-            itemStorage.deleteItemById(id);
+        if (itemStorage.findById(id).get().getOwner().getId().equals(userId)) {
+            itemStorage.deleteById(id);
         } else {
             throw new UncorrectOwnerException("Указан неверный владелец предмета");
         }
@@ -82,7 +83,7 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Item> items = itemStorage.findAllByNameOrDescription(text);
+        List<Item> items = itemStorage.findAllByNameOrDescription(text, text);
         List<ItemDto> userItemsDto = new ArrayList<>();
         for (Item item : items) {
             userItemsDto.add(ItemMapper.toItemDto(item));
