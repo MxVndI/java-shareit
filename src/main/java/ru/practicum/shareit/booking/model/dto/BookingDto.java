@@ -1,11 +1,13 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.model.dto;
 
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
-import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -16,14 +18,13 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class Booking {
-    @UniqueElements
+@NoArgsConstructor
+public class BookingDto {
     private Integer id;
     private LocalDateTime start;
     private LocalDateTime end;
-    private Item item;
-    private User booker;
+    private Integer item;
+    private Integer booker;
     private BookingStatus bookingStatus;
 }
