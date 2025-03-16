@@ -3,14 +3,19 @@ package ru.practicum.shareit.item.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.mapper.BookingMapper;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.item.ItemNotFoundException;
 import ru.practicum.shareit.exception.item.UncorrectOwnerException;
 import ru.practicum.shareit.exception.user.UserNotFoundException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.model.comment.Comment;
 import ru.practicum.shareit.item.model.dto.ItemDto;
+import ru.practicum.shareit.item.model.dto.ItemDtoOut;
 import ru.practicum.shareit.item.model.mapper.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.item.storage.repository.CommentRepository;
 import ru.practicum.shareit.item.storage.repository.ItemRepository;
 import ru.practicum.shareit.item.validator.ItemAvailabilityHandler;
 import ru.practicum.shareit.item.validator.ItemDescriptionHandler;
@@ -19,6 +24,8 @@ import ru.practicum.shareit.item.validator.ItemValidationHandler;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.repository.UserRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,23 +34,28 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userStorage;
+    private final CommentRepository commentRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Integer userId) {
         Item item = new Item();
         ItemValidationHandler validationChain = createValidationChain();
         validationChain.handle(itemDto, item, true);
-        item.setOwner(userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("User with id = " + userId + " not founded")));
+        item.setOwner(userStorage.findById(userId).orElseThrow(()
+                -> new UserNotFoundException("Пользователь с id = " + userId + " не найден")));
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
     @Transactional
-    public ItemDto findItemById(Integer id, Integer userId) {
-        System.out.println("id = " + id);
-        Item item = itemRepository.findById(id).orElseThrow( () -> new ItemNotFoundException("Item with id = " + id + " not founded") );
-        System.out.println(item.toString());
-        return ItemMapper.toItemDto(item);
+    public ItemDtoOut findItemById(Integer id, Integer userId) {
+        Item item = itemRepository.findById(id).orElseThrow(()
+                -> new ItemNotFoundException("Предмет с id = " + id + " не найден"));
+        Booking lastBooking = bookingRepository.getLastBooking(id, LocalDateTime.now()).orElseThrow(() -> new RuntimeException("temp"));
+        Booking nextBooking = bookingRepository.getNextBooking(id, LocalDateTime.now()).orElseThrow(() -> new RuntimeException("temp"));
+        List<Comment> comments = commentRepository.findAllByItemId(id);
+        return ItemMapper.toItemDto(item, BookingMapper.toDto(lastBooking), BookingMapper.toDto(nextBooking), comments);
     }
 
     @Override
@@ -92,7 +104,9 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = itemRepository.findAllByNameOrDescription(text, text);
         List<ItemDto> userItemsDto = new ArrayList<>();
         for (Item item : items) {
-            userItemsDto.add(ItemMapper.toItemDto(item));
+            if (item.getAvailable()) {
+                userItemsDto.add(ItemMapper.toItemDto(item));
+            }
         }
         return userItemsDto;
     }

@@ -26,7 +26,7 @@ public class BookingController {
         return bookingService.changeBookingStatus(bookingId, approved, ownerId);
     }
 
-    @GetMapping("{bookingId}")
+    @GetMapping("/{bookingId}")
     public BookingDto getBookingById(@PathVariable("bookingId") Integer bookingId,
                                      @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
         return bookingService.getBookingById(bookingId, ownerId);

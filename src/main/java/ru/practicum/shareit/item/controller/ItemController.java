@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.model.dto.ItemDto;
+import ru.practicum.shareit.item.model.dto.ItemDtoOut;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public ItemDto findItemById(@PathVariable("id") Integer id, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ItemDtoOut findItemById(@PathVariable("id") Integer id, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.findItemById(id, userId);
     }
 

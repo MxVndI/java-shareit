@@ -1,13 +1,15 @@
 package ru.practicum.shareit.item.model.dto;
 
 import jakarta.validation.constraints.Size;
-import lombok.*;
-
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * TODO Sprint add-controllers.
  */
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -20,6 +22,4 @@ public class ItemDto {
     private String description;
     private Boolean available;
     private Integer request;
-    private LocalDate lastBooking;
-    private LocalDate nextBooking;
 }
