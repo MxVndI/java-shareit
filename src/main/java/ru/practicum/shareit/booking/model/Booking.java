@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * TODO Sprint add-bookings.
  */
 @Entity
-@Table(name = "booking")
+@Table(name = "bookings")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,7 +25,7 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private LocalDateTime start;
-    private LocalDateTime end;
+    private LocalDateTime ends;
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;

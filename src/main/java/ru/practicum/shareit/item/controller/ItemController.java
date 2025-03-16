@@ -28,8 +28,8 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public ItemDto findItemById(@PathVariable("id") Integer id) {
-        return itemService.findItemById(id);
+    public ItemDto findItemById(@PathVariable("id") Integer id, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemService.findItemById(id, userId);
     }
 
     @PatchMapping("/{id}")

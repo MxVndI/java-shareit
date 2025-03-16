@@ -8,6 +8,8 @@ import lombok.Setter;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDate;
+
 /**
  * TODO Sprint add-controllers.
  */
@@ -31,7 +33,7 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-    @OneToOne
-    @JoinColumn(name = "request_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
 }

@@ -1,10 +1,14 @@
-package ru.practicum.shareit.exception.item;
+package ru.practicum.shareit.exception.item.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.practicum.shareit.exception.ErrorResponse;
+import ru.practicum.shareit.exception.item.FailedItemSaveException;
+import ru.practicum.shareit.exception.item.InvalidItemDataException;
+import ru.practicum.shareit.exception.item.ItemNotFoundException;
+import ru.practicum.shareit.exception.item.UncorrectOwnerException;
 
 @ControllerAdvice
 public class ItemExceptionHandler {

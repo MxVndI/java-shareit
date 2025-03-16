@@ -7,7 +7,7 @@ import java.util.List;
 public interface ItemService {
     ItemDto createItem(ItemDto itemDto, Integer userId);
 
-    ItemDto findItemById(Integer id);
+    ItemDto findItemById(Integer id, Integer userId);
 
     List<ItemDto> findAllByUser(Integer userId);
 

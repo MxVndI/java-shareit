@@ -24,7 +24,7 @@ public class BookingDto {
     private Integer id;
     private LocalDateTime start;
     private LocalDateTime end;
-    private Integer item;
+    private Integer itemId;
     private Integer booker;
     private BookingStatus bookingStatus;
 }
