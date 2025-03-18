@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.model.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 
+import java.util.List;
+
 /**
  * TODO Sprint add-bookings.
  */
@@ -30,5 +32,15 @@ public class BookingController {
     public BookingDto getBookingById(@PathVariable("bookingId") Integer bookingId,
                                      @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
         return bookingService.getBookingById(bookingId, ownerId);
+    }
+
+    @GetMapping("/owner")
+    public List<BookingDto> getAllBookingsByOwner(@RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+        return bookingService.getAllBookingsByOwner(ownerId);
+    }
+
+    @GetMapping
+    public List<BookingDto> getAllBookingsByBooker(@RequestHeader("X-Sharer-User-Id") Integer bookerId) {
+        return bookingService.getAllBookingsByBooker(bookerId);
     }
 }

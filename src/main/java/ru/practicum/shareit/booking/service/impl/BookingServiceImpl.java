@@ -19,6 +19,8 @@ import ru.practicum.shareit.item.storage.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.repository.UserRepository;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
@@ -59,6 +61,26 @@ public class BookingServiceImpl implements BookingService {
             throw new UncorrectOwnerException("Указан неверный владелец");
         }
         return BookingMapper.toDto(booking);
+    }
+
+    @Override
+    public List<BookingDto> getAllBookingsByOwner(Integer ownerId) {
+        User user = userRepository.findById(ownerId).orElseThrow(()
+                -> new UserNotFoundException("Пользователь с id = " + ownerId + " не найден"));
+        List<Booking> bookings = bookingRepository.findAllByBookerId(ownerId);
+        return bookings.stream()
+                .map(BookingMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<BookingDto> getAllBookingsByBooker(Integer bookerId) {
+        User user = userRepository.findById(bookerId).orElseThrow(()
+                -> new UserNotFoundException("Пользователь с id = " + bookerId + " не найден"));
+        List<Booking> bookings = bookingRepository.findAllByBookerId(bookerId);
+        return bookings.stream()
+                .map(BookingMapper::toDto)
+                .toList();
     }
 
     private void bookingValidation(BookingDto bookingDto, Item item, Integer ownerId) {

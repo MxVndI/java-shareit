@@ -26,7 +26,6 @@ import ru.practicum.shareit.item.validator.ItemValidationHandler;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.repository.UserRepository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,13 +71,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(Integer id, ItemDto itemDto, Integer userId) {
-        Item item = itemRepository.findById(id).get();
-        if (item == null) {
-            throw new ItemNotFoundException("Предмет с ID " + item.getId() + " не найден.");
-        }
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("Предмет с ID " + id + " не найден."));
         ItemValidationHandler validationChain = createValidationChain();
         validationChain.handle(itemDto, item, false);
-        User owner = itemRepository.findById(id).get().getOwner();
+        User owner = itemRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден")).getOwner();
         item.setOwner(owner);
         item.setId(id);
         if (item.getOwner().getId().equals(userId)) {
@@ -91,7 +89,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteItemById(Integer id, Integer userId) {
-        if (itemRepository.findById(id).get().getOwner().getId().equals(userId)) {
+        if (itemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("Предмет с ID " + id + " не найден."))
+                .getOwner().getId().equals(userId)) {
             itemRepository.deleteById(id);
         } else {
             throw new UncorrectOwnerException("Указан неверный владелец предмета");
@@ -104,22 +104,15 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
         List<Item> items = itemRepository.findByNameContainingOrDescriptionContaining(text, text);
-        System.out.println(items);
-        List<ItemDto> userItemsDto = new ArrayList<>();
-        for (Item item : items) {
-            if (item.getAvailable()) {
-                userItemsDto.add(ItemMapper.toItemDto(item));
-            }
-        }
-        return userItemsDto;
+        return items.stream().filter(Item::getAvailable).map(ItemMapper::toItemDto).toList();
     }
 
     @Override
     public Comment addComment(String text, Integer itemId, Integer userId) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Предмет не найден"));
         User author = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
-        Booking booking = bookingRepository.findByBookerIdAndItemId(userId, itemId).orElseThrow(() -> new BookingNotFoundException("НЕма"));
-        if (booking.getBookingStatus().equals(BookingStatus.APPROVED)) throw new UncorrectOwnerException("Чего блядь");
+        Booking booking = bookingRepository.findByBookerIdAndItemId(userId, itemId)
+                .orElseThrow(() -> new BookingNotFoundException("Нет брони"));
         Comment comment = new Comment();
         comment.setItem(item);
         comment.setAuthor(author);
