@@ -22,7 +22,7 @@ public class ItemExceptionHandler {
     @ExceptionHandler(UncorrectOwnerException.class)
     public ResponseEntity<ErrorResponse> handleUncorrectOwnerException(UncorrectOwnerException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
     @ExceptionHandler(FailedItemSaveException.class)

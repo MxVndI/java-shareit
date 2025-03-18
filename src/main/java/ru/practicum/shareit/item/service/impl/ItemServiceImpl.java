@@ -4,8 +4,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.booking.model.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.booking.BookingNotFoundException;
 import ru.practicum.shareit.exception.item.ItemNotFoundException;
 import ru.practicum.shareit.exception.item.UncorrectOwnerException;
 import ru.practicum.shareit.exception.user.UserNotFoundException;
@@ -52,8 +54,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemDtoOut findItemById(Integer id, Integer userId) {
         Item item = itemRepository.findById(id).orElseThrow(()
                 -> new ItemNotFoundException("Предмет с id = " + id + " не найден"));
-        Booking lastBooking = bookingRepository.getLastBooking(id, LocalDateTime.now()).orElseThrow(() -> new RuntimeException("temp"));
-        Booking nextBooking = bookingRepository.getNextBooking(id, LocalDateTime.now()).orElseThrow(() -> new RuntimeException("temp"));
+        Booking lastBooking = bookingRepository.getLastBooking(id, LocalDateTime.now()).orElse(null);
+        Booking nextBooking = bookingRepository.getNextBooking(id, LocalDateTime.now()).orElse(null);
         List<Comment> comments = commentRepository.findAllByItemId(id);
         return ItemMapper.toItemDto(item, BookingMapper.toDto(lastBooking), BookingMapper.toDto(nextBooking), comments);
     }
@@ -101,7 +103,8 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Item> items = itemRepository.findAllByNameOrDescription(text, text);
+        List<Item> items = itemRepository.findByNameContainingOrDescriptionContaining(text, text);
+        System.out.println(items);
         List<ItemDto> userItemsDto = new ArrayList<>();
         for (Item item : items) {
             if (item.getAvailable()) {
@@ -109,6 +112,20 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return userItemsDto;
+    }
+
+    @Override
+    public Comment addComment(String text, Integer itemId, Integer userId) {
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Предмет не найден"));
+        User author = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        Booking booking = bookingRepository.findByBookerIdAndItemId(userId, itemId).orElseThrow(() -> new BookingNotFoundException("НЕма"));
+        if (booking.getBookingStatus().equals(BookingStatus.APPROVED)) throw new UncorrectOwnerException("Чего блядь");
+        Comment comment = new Comment();
+        comment.setItem(item);
+        comment.setAuthor(author);
+        comment.setText(text);
+        commentRepository.save(comment);
+        return comment;
     }
 
     private ItemValidationHandler createValidationChain() {

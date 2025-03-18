@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     List<Item> findAllByOwnerId(Integer userId);
 
-    List<Item> findAllByNameOrDescription(String name, String description);
+    List<Item> findByNameContainingOrDescriptionContaining(String name, String description);
+
 }

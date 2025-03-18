@@ -18,6 +18,7 @@ import ru.practicum.shareit.user.model.User;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id")
     private Integer id;
     @NotNull
     private String text;

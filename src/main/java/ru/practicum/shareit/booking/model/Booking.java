@@ -1,10 +1,7 @@
 package ru.practicum.shareit.booking.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -23,6 +20,7 @@ import java.time.LocalDateTime;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_id")
     private Integer id;
     private LocalDateTime start;
     private LocalDateTime ends;
@@ -32,6 +30,6 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "booker_id", nullable = false)
     private User booker;
-    @Enumerated
+    @Enumerated(EnumType.ORDINAL)
     private BookingStatus bookingStatus;
 }
