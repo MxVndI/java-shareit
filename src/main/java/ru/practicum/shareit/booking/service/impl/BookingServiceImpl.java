@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.dto.BookingDto;
+import ru.practicum.shareit.booking.model.dto.BookingDtoOut;
 import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.booking.BookingNotFoundException;
@@ -19,6 +20,7 @@ import ru.practicum.shareit.item.storage.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,18 +30,19 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
-    public BookingDto addBooking(BookingDto bookingDto, Integer ownerId) {
+    public BookingDtoOut addBooking(BookingDto bookingDto, Integer ownerId) {
         User booker = userRepository.findById(ownerId).orElseThrow(()
                 -> new UserNotFoundException("Пользователь с id = " + ownerId + " не найден"));
         Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(()
-                -> new ItemNotFoundException("Предмет с id =" + bookingDto.getItemId() + " не найден"));
+                -> new ItemNotFoundException("Предмет с id =" + bookingDto.getId() + " не найден"));
         Booking booking = BookingMapper.toBooking(bookingDto, booker, item);
         bookingValidation(bookingDto, item, ownerId);
+        booking.setBookingStatus(BookingStatus.WAITING);
         bookingRepository.save(booking);
-        return BookingMapper.toDto(booking);
+        return BookingMapper.toBookingDtoOut(booking);
     }
 
-    public BookingDto changeBookingStatus(Integer bookingId, Boolean approved, Integer ownerId) {
+    public BookingDtoOut changeBookingStatus(Integer bookingId, Boolean approved, Integer ownerId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(()
                 -> new BookingNotFoundException("Бронь не найдена"));
         isCorrectItemOwner(booking.getItem(), ownerId);
@@ -49,10 +52,10 @@ public class BookingServiceImpl implements BookingService {
         } else {
             booking.setBookingStatus(BookingStatus.REJECTED);
         }
-        return BookingMapper.toDto(bookingRepository.save(booking));
+        return BookingMapper.toBookingDtoOut(bookingRepository.save(booking));
     }
 
-    public BookingDto getBookingById(Integer bookingId, Integer ownerId) {
+    public BookingDtoOut getBookingById(Integer bookingId, Integer ownerId) {
         User user = userRepository.findById(ownerId).orElseThrow(()
                 -> new UserNotFoundException("Пользователь с id = " + ownerId + " не найден"));
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(()
@@ -60,27 +63,31 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getItem().getOwner().equals(user) && !booking.getBooker().equals(user)) {
             throw new UncorrectOwnerException("Указан неверный владелец");
         }
-        return BookingMapper.toDto(booking);
+        return BookingMapper.toBookingDtoOut(booking);
     }
 
     @Override
-    public List<BookingDto> getAllBookingsByOwner(Integer ownerId) {
+    public List<BookingDtoOut> getAllBookingsByOwner(Integer ownerId) {
         User user = userRepository.findById(ownerId).orElseThrow(()
                 -> new UserNotFoundException("Пользователь с id = " + ownerId + " не найден"));
         List<Booking> bookings = bookingRepository.findAllByBookerId(ownerId);
-        return bookings.stream()
-                .map(BookingMapper::toDto)
-                .toList();
+        List<BookingDtoOut> bookingsDtos = new ArrayList<>();
+        for (Booking booking: bookings) {
+            bookingsDtos.add(BookingMapper.toBookingDtoOut(booking));
+        }
+        return bookingsDtos;
     }
 
     @Override
-    public List<BookingDto> getAllBookingsByBooker(Integer bookerId) {
+    public List<BookingDtoOut> getAllBookingsByBooker(Integer bookerId) {
         User user = userRepository.findById(bookerId).orElseThrow(()
                 -> new UserNotFoundException("Пользователь с id = " + bookerId + " не найден"));
         List<Booking> bookings = bookingRepository.findAllByBookerId(bookerId);
-        return bookings.stream()
-                .map(BookingMapper::toDto)
-                .toList();
+        List<BookingDtoOut> bookingsDtos = new ArrayList<>();
+        for (Booking booking: bookings) {
+            bookingsDtos.add(BookingMapper.toBookingDtoOut(booking));
+        }
+        return bookingsDtos;
     }
 
     private void bookingValidation(BookingDto bookingDto, Item item, Integer ownerId) {

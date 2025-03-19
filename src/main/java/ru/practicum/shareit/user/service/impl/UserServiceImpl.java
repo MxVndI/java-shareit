@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        User user = new User();
+        User user = UserMapper.toUser(userDto);
         UserValidationHandler validationChain = createValidationChain();
         validationChain.handle(userDto, user, true);
         return UserMapper.toUserDto(userStorage.save(user));

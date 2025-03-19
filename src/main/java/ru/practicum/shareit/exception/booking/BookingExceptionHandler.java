@@ -15,9 +15,14 @@ public class BookingExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-
     @ExceptionHandler(NotValidDateException.class)
     public ResponseEntity<ErrorResponse> handleItemNotAvailableException(NotValidDateException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(BookingIsNotEndedException.class)
+    public ResponseEntity<ErrorResponse> handleBookingIsNotEnded(BookingIsNotEndedException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }

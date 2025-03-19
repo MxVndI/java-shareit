@@ -6,12 +6,15 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.booking.BookingIsNotEndedException;
 import ru.practicum.shareit.exception.booking.BookingNotFoundException;
 import ru.practicum.shareit.exception.item.ItemNotFoundException;
 import ru.practicum.shareit.exception.item.UncorrectOwnerException;
 import ru.practicum.shareit.exception.user.UserNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.comment.Comment;
+import ru.practicum.shareit.item.model.comment.CommentDto;
+import ru.practicum.shareit.item.model.comment.CommentMapper;
 import ru.practicum.shareit.item.model.dto.ItemDto;
 import ru.practicum.shareit.item.model.dto.ItemDtoOut;
 import ru.practicum.shareit.item.model.mapper.ItemMapper;
@@ -50,11 +53,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ItemDtoOut findItemById(Integer id, Integer userId) {
+        User user = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Нет пользователя"));
         Item item = itemRepository.findById(id).orElseThrow(()
                 -> new ItemNotFoundException("Предмет с id = " + id + " не найден"));
         Booking lastBooking = bookingRepository.getLastBooking(id, LocalDateTime.now()).orElse(null);
         Booking nextBooking = bookingRepository.getNextBooking(id, LocalDateTime.now()).orElse(null);
-        List<Comment> comments = commentRepository.findAllByItemId(id);
+        List<CommentDto> comments = commentRepository.findAllByItemId(id).stream().map(CommentMapper::toItemDto).toList();
         return ItemMapper.toItemDto(item, BookingMapper.toDto(lastBooking), BookingMapper.toDto(nextBooking), comments);
     }
 
@@ -107,17 +111,22 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Comment addComment(String text, Integer itemId, Integer userId) {
+    public CommentDto addComment(String text, Integer itemId, Integer userId) {
+        System.out.println(text);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Предмет не найден"));
         User author = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         Booking booking = bookingRepository.findByBookerIdAndItemId(userId, itemId)
                 .orElseThrow(() -> new BookingNotFoundException("Нет брони"));
+        if (booking.getEnds().isAfter(LocalDateTime.now())) {
+            throw new BookingIsNotEndedException("Вы не можете оставить комментарий, когда бронь не закончится");
+        }
         Comment comment = new Comment();
         comment.setItem(item);
         comment.setAuthor(author);
         comment.setText(text);
+        comment.setCreated(LocalDateTime.now());
         commentRepository.save(comment);
-        return comment;
+        return CommentMapper.toItemDto(comment);
     }
 
     private ItemValidationHandler createValidationChain() {
