@@ -1,12 +1,10 @@
 package ru.practicum.shareit.item.model.dto;
 
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.booking.model.dto.BookingDto;
-import ru.practicum.shareit.item.model.comment.Comment;
 import ru.practicum.shareit.item.model.comment.CommentDto;
 
 import java.util.List;
