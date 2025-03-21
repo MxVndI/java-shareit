@@ -1,25 +1,25 @@
 package ru.practicum.shareit.item.model.dto;
 
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.shareit.booking.model.dto.BookingDto;
+import ru.practicum.shareit.item.model.comment.CommentDto;
 
-/**
- * TODO Sprint add-controllers.
- */
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
+public class ItemDtoOut {
     private Integer id;
-    @Size(min = 3, max = 100, message = "Item name length must be in between 3 and 20")
     private String name;
-    @Size(min = 10, message = "Item description length must be more than 10")
     private String description;
     private Boolean available;
     private Integer request;
+    private BookingDto lastBooking;
+    private BookingDto nextBooking;
+    private List<CommentDto> comments;
 }
