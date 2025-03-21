@@ -29,25 +29,25 @@ public class BookingClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> create(BookingDto bookingDto, Integer userId) {
+    public ResponseEntity<Object> create(BookingDto bookingDto, Long userId) {
         return post("", userId, bookingDto);
     }
 
-    public ResponseEntity<Object> approved(Boolean approved, Integer bookingId, Integer userId) {
+    public ResponseEntity<Object> approved(Boolean approved, Long bookingId, Long userId) {
         String url = "/" + bookingId + "?approved=" + approved;
         return patch(url, userId, null);
     }
 
-    public ResponseEntity<Object> getBookingById(Integer bookingId, Integer userId) {
+    public ResponseEntity<Object> getBookingById(Long bookingId, Long userId) {
         return get("/" + bookingId, userId);
     }
 
-    public ResponseEntity<Object> findBookingByBooker(BookingState state, Integer userId) {
+    public ResponseEntity<Object> findBookingByBooker(BookingState state, Long userId) {
         return get("?state=" + state, userId);
     }
 
     public ResponseEntity<Object> findBookingByOwner(@Valid @RequestParam(defaultValue = "ALL") BookingState state,
-                                                     @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                                                     @RequestHeader("X-Sharer-User-Id") Long userId) {
         return get("/owner?state=" + state, userId);
     }
 }

@@ -20,29 +20,29 @@ public class ItemController {
     private final ItemClient itemClient;
 
     @GetMapping
-    public ResponseEntity<Object> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ResponseEntity<Object> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Просмотр владельцем списка всех его вещей: userId={}", userId);
         return itemClient.getAllItemsOfUser(userId);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Object> getItemById(@PathVariable Integer id,
-                                              @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ResponseEntity<Object> getItemById(@PathVariable Long id,
+                                              @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Найти вещь по id: itemId={}, userId={}", id, userId);
         return itemClient.getItemById(id, userId);
     }
 
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody ItemDto itemDto,
-                                         @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Добавить вещь: item={}, userId={}", itemDto, userId);
         return itemClient.create(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> update(@Valid @RequestBody ItemDto itemDto,
-                                         @PathVariable Integer itemId,
-                                         @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                                         @PathVariable Long itemId,
+                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Отредактировать вещь: itemId={}, userId={}", itemId, userId);
         return itemClient.update(itemDto, itemId, userId);
     }
@@ -55,8 +55,8 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> createComment(@Valid @RequestBody CommentDto commentDto,
-                                                @PathVariable Integer itemId,
-                                                @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                                                @PathVariable Long itemId,
+                                                @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Добавление комментария о вещи после аренды: comment={}, itemId={}, userId={}", commentDto, itemId, userId);
         return itemClient.createComment(commentDto, itemId, userId);
     }

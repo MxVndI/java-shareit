@@ -25,19 +25,19 @@ public class ItemClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> getAllItemsOfUser(Integer userId) {
+    public ResponseEntity<Object> getAllItemsOfUser(Long userId) {
         return get("", userId);
     }
 
-    public ResponseEntity<Object> getItemById(Integer id, Integer userId) {
+    public ResponseEntity<Object> getItemById(Long id, Long userId) {
         return get("/" + id, userId);
     }
 
-    public ResponseEntity<Object> create(ItemDto itemDto, Integer userId) {
+    public ResponseEntity<Object> create(ItemDto itemDto, Long userId) {
         return post("", userId, itemDto);
     }
 
-    public ResponseEntity<Object> update(ItemDto itemDto, Integer itemId, Integer userId) {
+    public ResponseEntity<Object> update(ItemDto itemDto, Long itemId, Long userId) {
         return patch("/" + itemId, userId, itemDto);
     }
 
@@ -45,7 +45,7 @@ public class ItemClient extends BaseClient {
         return get("/search?text=" + text);
     }
 
-    public ResponseEntity<Object> createComment(CommentDto commentDto, Integer itemId, Integer userId) {
+    public ResponseEntity<Object> createComment(CommentDto commentDto, Long itemId, Long userId) {
         return post("/" + itemId + "/comment", userId, null, commentDto);
     }
 }

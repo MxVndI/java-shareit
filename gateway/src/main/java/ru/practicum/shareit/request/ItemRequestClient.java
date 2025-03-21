@@ -23,19 +23,19 @@ public class ItemRequestClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> create(ItemRequestDto itemRequestDto, Integer userId) {
+    public ResponseEntity<Object> create(ItemRequestDto itemRequestDto, Long userId) {
         return post("", userId, itemRequestDto);
     }
 
-    public ResponseEntity<Object> getItemRequestsOfRequestor(Integer userId) {
+    public ResponseEntity<Object> getItemRequestsOfRequestor(Long userId) {
         return get("", userId);
     }
 
-    public ResponseEntity<Object> getItemRequestsOfAllUsers(Integer userId) {
+    public ResponseEntity<Object> getItemRequestsOfAllUsers(Long userId) {
         return get("/all", userId);
     }
 
-    public ResponseEntity<Object> getItemRequestById(Integer requestId, Integer userId) {
+    public ResponseEntity<Object> getItemRequestById(Long requestId, Long userId) {
         return get("/" + requestId, userId);
     }
 
