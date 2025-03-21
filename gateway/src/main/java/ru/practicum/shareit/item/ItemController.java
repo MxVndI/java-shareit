@@ -19,16 +19,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 public class ItemController {
     private final ItemClient itemClient;
 
-    //GET /items
-    // просмотр владельцем списка всех его вещей
     @GetMapping
     public ResponseEntity<Object> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.info("Просмотр владельцем списка всех его вещей: userId={}", userId);
         return itemClient.getAllItemsOfUser(userId);
     }
 
-    //GET /items/{itemId}
-    // найти вещь по Id
     @GetMapping(value = "/{id}")
     public ResponseEntity<Object> getItemById(@PathVariable Integer id,
                                               @RequestHeader("X-Sharer-User-Id") Integer userId) {

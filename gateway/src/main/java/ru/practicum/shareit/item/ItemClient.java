@@ -11,7 +11,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
-
 @Service
 public class ItemClient extends BaseClient {
     private static final String API_PREFIX = "/items";
