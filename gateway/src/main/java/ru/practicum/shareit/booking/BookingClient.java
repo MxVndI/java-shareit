@@ -2,15 +2,19 @@ package ru.practicum.shareit.booking;
 
 import java.util.Map;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.client.BaseClient;
 
@@ -28,21 +32,35 @@ public class BookingClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> getBookings(Integer userId, BookingState state, Integer from, Integer size) {
-        Map<String, Object> parameters = Map.of(
-                "state", state.name(),
-                "from", from,
-                "size", size
-        );
-        return get("?state={state}&from={from}&size={size}", userId, parameters);
+    //POST /bookings
+    // добавление нового запроса на бронирование
+    public ResponseEntity<Object> create(BookingDto bookingDto, Integer userId) {
+        return post("", userId, bookingDto);
     }
 
-
-    public ResponseEntity<Object> bookItem(Integer userId, BookItemRequestDto requestDto) {
-        return post("", userId, requestDto);
+    //PATCH /bookings/{bookingId}?approved={approved}
+    //подтверждение или отклонение запроса на бронирование
+    public ResponseEntity<Object> approved(Boolean approved, Integer bookingId, Integer userId) {
+        String url = "/" + bookingId + "?approved=" + approved;
+        return patch(url, userId, null);
     }
 
-    public ResponseEntity<Object> getBooking(Integer userId, Long bookingId) {
+    //GET /bookings/{bookingId}
+    //получение запроса на бронирование по Id
+    public ResponseEntity<Object> getBookingById(Integer bookingId, Integer userId) {
         return get("/" + bookingId, userId);
+    }
+
+    //GET /bookings?state={state}
+    //получение списка всех бронирований текущего пользователя
+    public ResponseEntity<Object> findBookingByBooker(BookingState state, Integer userId) {
+        return get("?state=" + state, userId);
+    }
+
+    //GET /bookings/owner?state={state}
+    //получение списка всех бронирований текущего пользователя(владельца вещи)
+    public ResponseEntity<Object> findBookingByOwner(@Valid @RequestParam(defaultValue = "ALL") BookingState state,
+                                                     @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return get("/owner?state=" + state, userId);
     }
 }
