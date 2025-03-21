@@ -27,7 +27,6 @@ import ru.practicum.shareit.item.validator.ItemNameHandler;
 import ru.practicum.shareit.item.validator.ItemValidationHandler;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestRepository;
-import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.repository.UserRepository;
 

@@ -3,7 +3,6 @@ package ru.practicum.shareit.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.user.UserNotFoundException;
-import ru.practicum.shareit.item.model.dto.ItemDto;
 import ru.practicum.shareit.item.model.dto.ItemDtoAnswers;
 import ru.practicum.shareit.item.model.mapper.ItemMapper;
 import ru.practicum.shareit.item.storage.repository.ItemRepository;
