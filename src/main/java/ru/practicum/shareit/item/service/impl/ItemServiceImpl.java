@@ -25,6 +25,9 @@ import ru.practicum.shareit.item.validator.ItemAvailabilityHandler;
 import ru.practicum.shareit.item.validator.ItemDescriptionHandler;
 import ru.practicum.shareit.item.validator.ItemNameHandler;
 import ru.practicum.shareit.item.validator.ItemValidationHandler;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.repository.UserRepository;
 
@@ -39,10 +42,18 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userStorage;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Integer userId) {
-        Item item = new Item();
+        Item item;
+        User user = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Нет пользователя"));
+        if (itemDto.getRequestId() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new UserNotFoundException("Нет пользователя"));
+            item = ItemMapper.toItem(itemDto, user, itemRequest);
+        } else {
+            item = new Item();
+        }
         ItemValidationHandler validationChain = createValidationChain();
         validationChain.handle(itemDto, item, true);
         item.setOwner(userStorage.findById(userId).orElseThrow(()
@@ -112,7 +123,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(String text, Integer itemId, Integer userId) {
-        System.out.println(text);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Предмет не найден"));
         User author = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         Booking booking = bookingRepository.findByBookerIdAndItemId(userId, itemId)

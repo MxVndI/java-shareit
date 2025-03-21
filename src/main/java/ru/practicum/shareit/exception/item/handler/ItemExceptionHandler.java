@@ -5,10 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.practicum.shareit.exception.ErrorResponse;
-import ru.practicum.shareit.exception.item.FailedItemSaveException;
-import ru.practicum.shareit.exception.item.InvalidItemDataException;
-import ru.practicum.shareit.exception.item.ItemNotFoundException;
-import ru.practicum.shareit.exception.item.UncorrectOwnerException;
+import ru.practicum.shareit.exception.item.*;
 
 @ControllerAdvice
 public class ItemExceptionHandler {
@@ -26,8 +23,8 @@ public class ItemExceptionHandler {
     }
 
     @ExceptionHandler(FailedItemSaveException.class)
-    public ResponseEntity<ErrorResponse> handleFailedItemSaveException(FailedItemSaveException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+    public ResponseEntity<ItemErrorResponse> handleFailedItemSaveException(FailedItemSaveException ex) {
+        ItemErrorResponse errorResponse = new ItemErrorResponse(ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 

@@ -21,5 +21,5 @@ public class ItemDto {
     @Size(min = 10, message = "Item description length must be more than 10")
     private String description;
     private Boolean available;
-    private Integer request;
+    private Integer requestId;
 }

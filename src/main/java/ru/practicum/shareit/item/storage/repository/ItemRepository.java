@@ -16,4 +16,5 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
             "WHERE LOWER(i.name) LIKE LOWER(?1) OR LOWER(i.description) LIKE LOWER(?2)", nativeQuery = true)
     List<Item> findByNameContainingOrDescriptionContaining(String name, String description);
 
+    List<Item> findAllByRequestId(Integer request);
 }

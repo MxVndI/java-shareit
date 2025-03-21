@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -21,7 +20,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequest {
-    @UniqueElements
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -33,4 +31,10 @@ public class ItemRequest {
     private User requester;
     @Column(name = "created")
     private LocalDateTime created = LocalDateTime.now();
+
+    public ItemRequest(String description, User user, LocalDateTime created) {
+        this.description = description;
+        this.requester = user;
+        this.created = created;
+    }
 }
