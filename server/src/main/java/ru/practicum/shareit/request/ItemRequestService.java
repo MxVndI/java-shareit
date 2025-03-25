@@ -45,7 +45,7 @@ public class ItemRequestService {
     }
 
     public List<ItemRequestDtoWithAnswers> getItemRequests(Integer userId) {
-        List<ItemRequest> requests = itemRequestRepository.findAllByRequesterIdNotAndOrderByCreatedAsc(userId);
+        List<ItemRequest> requests = itemRequestRepository.findAllByRequesterIdNotOrderByCreatedAsc(userId);
         List<ItemRequestDtoWithAnswers> requestsOut = new ArrayList<>();
         for (ItemRequest request: requests) {
             List<ItemDtoAnswers> items = itemRepository.findAllByRequestId(request.getId())
