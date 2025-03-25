@@ -22,7 +22,7 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> getUserItemRequests(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public List<ItemRequestDtoWithAnswers> getUserItemRequests(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemRequestService.getUserItemRequests(userId);
     }
 

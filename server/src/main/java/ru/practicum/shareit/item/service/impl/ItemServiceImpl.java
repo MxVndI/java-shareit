@@ -10,6 +10,7 @@ import ru.practicum.shareit.exception.booking.BookingIsNotEndedException;
 import ru.practicum.shareit.exception.booking.BookingNotFoundException;
 import ru.practicum.shareit.exception.item.ItemNotFoundException;
 import ru.practicum.shareit.exception.item.UncorrectOwnerException;
+import ru.practicum.shareit.exception.request.ItemRequestNotFound;
 import ru.practicum.shareit.exception.user.UserNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.comment.Comment;
@@ -48,7 +49,8 @@ public class ItemServiceImpl implements ItemService {
         Item item;
         User user = userStorage.findById(userId).orElseThrow(() -> new UserNotFoundException("Нет пользователя"));
         if (itemDto.getRequestId() != null) {
-            ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new UserNotFoundException("Нет пользователя"));
+            ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> new ItemRequestNotFound("Нет бронирования"));
             item = ItemMapper.toItem(itemDto, user, itemRequest);
         } else {
             item = new Item();

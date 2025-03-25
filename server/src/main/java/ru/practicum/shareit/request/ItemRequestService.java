@@ -21,16 +21,21 @@ public class ItemRequestService {
     private final ItemRepository itemRepository;
 
     public ItemRequestDto addNewRequest(ItemRequestDto itemRequestDto, Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("no user"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDto, user);
-        itemRequestRepository.save(itemRequest);
-        return ItemRequestMapper.toDto(itemRequest);
+        return ItemRequestMapper.toDto(itemRequestRepository.save(itemRequest));
     }
 
-    public List<ItemRequestDto> getUserItemRequests(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("no user"));
-        itemRequestRepository.findAllByRequesterId(userId);
-        return itemRequestRepository.findAllByRequesterId(userId).stream().map(ItemRequestMapper::toDto).toList();
+    public List<ItemRequestDtoWithAnswers> getUserItemRequests(Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        List<ItemRequest> temp = itemRequestRepository.findAllByRequesterId(userId);
+        List<ItemRequestDtoWithAnswers> requests = new ArrayList<>();
+        for (ItemRequest request: temp) {
+            List<ItemDtoAnswers> items = itemRepository.findAllByRequestId(request.getId())
+                    .stream().map(ItemMapper::toItemDtoAnswers).toList();
+            requests.add(ItemRequestMapper.toDto(request, items));
+        }
+        return requests;
     }
 
     public ItemRequestDto getItemRequestById(Integer requestId) {
@@ -43,7 +48,8 @@ public class ItemRequestService {
         List<ItemRequest> requests = itemRequestRepository.findAll();
         List<ItemRequestDtoWithAnswers> requestsOut = new ArrayList<>();
         for (ItemRequest request: requests) {
-            List<ItemDtoAnswers> items = itemRepository.findAllByRequestId(request.getId()).stream().map(ItemMapper::toItemDtoAnswers).toList();
+            List<ItemDtoAnswers> items = itemRepository.findAllByRequestId(request.getId())
+                    .stream().map(ItemMapper::toItemDtoAnswers).toList();
             requestsOut.add(ItemRequestMapper.toDto(request, items));
         }
         return requestsOut;
