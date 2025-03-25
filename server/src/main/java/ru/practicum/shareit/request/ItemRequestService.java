@@ -38,14 +38,14 @@ public class ItemRequestService {
         return requests;
     }
 
-    public ItemRequestDto getItemRequestById(Integer requestId) {
+    public ItemRequestDtoWithAnswers getItemRequestById(Integer requestId) {
         List<ItemDtoAnswers> items = itemRepository.findAllByRequestId(requestId).stream().map(ItemMapper::toItemDtoAnswers).toList();
         ItemRequest itemRequest = itemRequestRepository.findById(requestId).orElseThrow();
         return ItemRequestMapper.toDto(itemRequest, items);
     }
 
-    public List<ItemRequestDtoWithAnswers> getItemRequests() {
-        List<ItemRequest> requests = itemRequestRepository.findAll();
+    public List<ItemRequestDtoWithAnswers> getItemRequests(Integer userId) {
+        List<ItemRequest> requests = itemRequestRepository.findAllByRequesterIdNotAndOrderByCreatedAsc(userId);
         List<ItemRequestDtoWithAnswers> requestsOut = new ArrayList<>();
         for (ItemRequest request: requests) {
             List<ItemDtoAnswers> items = itemRepository.findAllByRequestId(request.getId())

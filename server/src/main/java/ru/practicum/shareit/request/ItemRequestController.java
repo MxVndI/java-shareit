@@ -27,12 +27,12 @@ public class ItemRequestController {
     }
 
     @GetMapping("/{id}")
-    public ItemRequestDto getItemRequestById(@PathVariable("id") Integer requestId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ItemRequestDtoWithAnswers getItemRequestById(@PathVariable("id") Integer requestId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemRequestService.getItemRequestById(requestId);
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDtoWithAnswers> getItemRequests() {
-        return itemRequestService.getItemRequests();
+    public List<ItemRequestDtoWithAnswers> getItemRequests(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemRequestService.getItemRequests(userId);
     }
 }
